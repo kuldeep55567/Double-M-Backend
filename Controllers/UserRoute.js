@@ -149,9 +149,9 @@ UserRouter.get('/users/:role?/:inGameRole?', async (req, res) => {
 });
 
 
-UserRouter.post('/updateProfile/:id',async (req, res) => {
+UserRouter.post('/updateProfile',authMiddleWare,async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userId = req.user._id;
     const {ffName, bio, inGameRole, otherGames, favGuns, instagramURL,discordTag } = req.body;
     const user = await UserModel.findById(userId);
     if (!user) {
