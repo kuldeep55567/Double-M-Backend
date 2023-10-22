@@ -4,7 +4,7 @@ require("dotenv").config();
   const authMiddleWare = async (req,res,next) => {
     try {
       const token = req.headers.authorization;
-      const decodedToken = jwt.verify(token, process.env.secret);
+      const decodedToken = jwt.verify(token, process.env.SECRET);
       const { userId } = decodedToken;
       const user = await UserModel.findById(userId);
       if (!user) {
