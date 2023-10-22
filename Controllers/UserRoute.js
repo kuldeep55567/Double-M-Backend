@@ -173,9 +173,13 @@ UserRouter.post('/updateProfile',authMiddleWare,async (req, res) => {
     // Handle profile picture upload and update
     if (req.files && req.files.image) {
       try {
-        await cloudinary.uploader.upload(req.files.image.tempFilePath, (err, result) => {
+        let uploadStream = cloudinary.uploader.upload_stream((err, result) => {
+          if (err) {
+            return res.status(500).json({ Uploading_Error_Message: err.message });
+          }
           user.profilePicURL = result.secure_url;
         });
+        streamifier.createReadStream(req.files.image.data).pipe(uploadStream);
       } catch (uploadError) {
         return res.status(500).json({ Uploading_Error_Message: uploadError.message });
       }
