@@ -69,7 +69,7 @@ UserRouter.get('/verify/:token', async (req, res) => {
     }
     user.isVerified = true;
     await user.save();
-    res.redirect('https://65351bb956d42a68e87ea4a3--chimerical-custard-ed7e45.netlify.app');
+    res.redirect('https://65353679598cac421a789565--fabulous-basbousa-1ac9fe.netlify.app');
 
   } catch (error) {
     return res.status(500).json({ mssg: error.message });
