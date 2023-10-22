@@ -176,8 +176,13 @@ UserRouter.post('/updateProfile', authMiddleWare, async (req, res) => {
         const imageBuffer = req.files.avatar.data; 
         const result = await new Promise((resolve, reject) => {
           const uploadStream = cloudinary.uploader.upload_stream({ resource_type: 'auto' }, (err, result) => {
-            if (err) reject(err);
-            else resolve(result);
+            if (err) {
+              reject(err);
+            }
+            else {
+              resolve(result);
+              console.log(result)
+            }    
           });
           uploadStream.end(imageBuffer);
         });
