@@ -24,7 +24,7 @@ UserRouter.post('/register', async (req, res) => {
     }
     const hashed = await bcrypt.hash(password, 10);
     const token = jwt.sign({ email }, process.env.SECRET, { expiresIn: '2h' });
-    const verificationURL = `http://localhost:4500/api/verify/${token}`;
+    const verificationURL = `https://nice-jade-cocoon-gear.cyclic.app/api/verify/${token}`;
     const user = new UserModel({
       name,
       email,
