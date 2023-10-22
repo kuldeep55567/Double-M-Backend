@@ -171,20 +171,14 @@ UserRouter.post('/updateProfile', authMiddleWare, async (req, res) => {
     user.discordTag = discordTag || user.discordTag;
 
     // Handle profile picture upload and update
-    if (req.files && req.files.image) {
-      console.log("Trying to upload to Cloudinary...");
+    if (req.files && req.files.avatar) {
       try {
-        await cloudinary.uploader.upload_stream({ resource_type: 'raw' }, (error, result) => {
-          if (error) {
-            console.error("Cloudinary Upload Error:", error);
-            throw error;
-          } else {
-            console.log("Cloudinary Upload Result:", result);
-            user.profilePicURL = result.secure_url;
-          }
-        }).end(req.files.image.data);
+        const imageBuffer = req.files.avatar.data; // Get image as buffer
+        await cloudinary.uploader.upload_stream({ resource_type: 'auto' }, (err, result) => {
+          if (err) throw err;
+          user.profilePicURL = result.secure_url;
+        }).end(imageBuffer);
       } catch (uploadError) {
-        console.error("Caught Error:", uploadError);
         return res.status(500).json({ Uploading_Error_Message: uploadError.message });
       }
     }
