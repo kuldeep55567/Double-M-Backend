@@ -94,7 +94,7 @@ UserRouter.post('/login', async (req, res) => {
     const response = {
       ok: true,
       token: ftoken,
-      id:user._id,
+      id: user._id,
       mssg: 'Login Successfull',
       name: user.name
     };
@@ -103,7 +103,7 @@ UserRouter.post('/login', async (req, res) => {
     res.status(500).json({ mssg: error.message });
   }
 });
-UserRouter.get('/profile/:id',async (req, res) => {
+UserRouter.get('/profile/:id', async (req, res) => {
   try {
     const userId = req.params.id;
     const user = await UserModel.findById(userId);
@@ -120,7 +120,7 @@ UserRouter.get('/profile/:id',async (req, res) => {
 });
 UserRouter.get('/me', authMiddleWare, async (req, res) => {
   try {
-  const user = req.user;
+    const user = req.user;
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -149,10 +149,10 @@ UserRouter.get('/users/:role?/:inGameRole?', async (req, res) => {
 });
 
 
-UserRouter.post('/updateProfile',authMiddleWare,async (req, res) => {
+UserRouter.post('/updateProfile', authMiddleWare, async (req, res) => {
   try {
     const userId = req.user._id;
-    const {ffName, bio, inGameRole, otherGames, favGuns, instagramURL,discordTag } = req.body;
+    const { ffName, bio, inGameRole, otherGames, favGuns, instagramURL, discordTag } = req.body;
     const user = await UserModel.findById(userId);
     if (!user) {
       return res.status(404).json({ mssg: 'User not Found' });
@@ -172,15 +172,19 @@ UserRouter.post('/updateProfile',authMiddleWare,async (req, res) => {
 
     // Handle profile picture upload and update
     if (req.files && req.files.image) {
+      console.log("Trying to upload to Cloudinary...");
       try {
-        let uploadStream = cloudinary.uploader.upload_stream((err, result) => {
-          if (err) {
-            return res.status(500).json({ Uploading_Error_Message: err.message });
+        await cloudinary.uploader.upload_stream({ resource_type: 'raw' }, (error, result) => {
+          if (error) {
+            console.error("Cloudinary Upload Error:", error);
+            throw error;
+          } else {
+            console.log("Cloudinary Upload Result:", result);
+            user.profilePicURL = result.secure_url;
           }
-          user.profilePicURL = result.secure_url;
-        });
-        streamifier.createReadStream(req.files.image.data).pipe(uploadStream);
+        }).end(req.files.image.data);
       } catch (uploadError) {
+        console.error("Caught Error:", uploadError);
         return res.status(500).json({ Uploading_Error_Message: uploadError.message });
       }
     }
