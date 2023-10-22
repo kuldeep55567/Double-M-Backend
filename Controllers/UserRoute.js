@@ -69,7 +69,7 @@ UserRouter.get('/verify/:token', async (req, res) => {
     }
     user.isVerified = true;
     await user.save();
-    res.redirect('https://65351bb956d42a68e87ea4a3--chimerical-custard-ed7e45.netlify.app/login');
+    res.redirect('https://65351bb956d42a68e87ea4a3--chimerical-custard-ed7e45.netlify.app');
 
   } catch (error) {
     return res.status(500).json({ mssg: error.message });
@@ -118,7 +118,19 @@ UserRouter.get('/profile/:id',async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 });
-
+UserRouter.get('/me', authMiddleWare, async (req, res) => {
+  try {
+  const user = req.user;
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    user.password = undefined;
+    res.status(200).json(user);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: error.message });
+  }
+});
 UserRouter.get('/users/:role?/:inGameRole?', async (req, res) => {
   try {
     const { name, ffName } = req.query;
