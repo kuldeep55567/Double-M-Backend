@@ -14,7 +14,7 @@ const UserSchema = new mongoose.Schema({
     otherGames: { type: [String], default: [] }, 
     inGameRole:{ type: String, default: null },
     favGuns: { type: [String], default: [] },   
-    instagramURL: { type: String, default: null },
+    instagramURL: { type: String, default: 'https://help.instagram.com/415595770433263/?helpref=uf_share' },
     discordTag: { type: String, default: null },
     teamName: { type: String, default: null },
     tournamentsPlayed: { type: Number, default: 0 },
