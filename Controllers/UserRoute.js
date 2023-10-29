@@ -134,7 +134,7 @@ UserRouter.get('/me', authMiddleWare, async (req, res) => {
 UserRouter.get('/users', async (req, res) => {
   try {
     const { searchTerm, role,inGameRole,limit = 10, skip = 0 } = req.query;
-    let query = {};
+    let query = {isVerified:true};
 
     if (searchTerm) {
       query.$or = [
