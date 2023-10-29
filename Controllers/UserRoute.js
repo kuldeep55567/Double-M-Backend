@@ -69,7 +69,7 @@ UserRouter.get('/verify/:token', async (req, res) => {
     }
     user.isVerified = true;
     await user.save();
-    res.redirect('https://65353679598cac421a789565--fabulous-basbousa-1ac9fe.netlify.app');
+    res.redirect('https://double-m.vercel.app/login');
 
   } catch (error) {
     return res.status(500).json({ mssg: error.message });
