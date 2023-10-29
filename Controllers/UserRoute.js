@@ -133,11 +133,15 @@ UserRouter.get('/me', authMiddleWare, async (req, res) => {
 });
 UserRouter.get('/users', async (req, res) => {
   try {
-    const { name, ffName, role,inGameRole,limit = 10, skip = 0 } = req.query;
+    const { searchTerm, role,inGameRole,limit = 10, skip = 0 } = req.query;
     let query = {};
 
-    if (name) query.name = new RegExp(name, 'i'); 
-    if (ffName) query.ffName = new RegExp(ffName, 'i'); 
+    if (searchTerm) {
+      query.$or = [
+        { name: new RegExp(searchTerm, 'i') },
+        { ffName: new RegExp(searchTerm, 'i') }
+      ];
+    }
     if (role) query.role = role;
     if (inGameRole) query.inGameRole = inGameRole
 
@@ -158,7 +162,6 @@ UserRouter.get('/users', async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 });
-
 UserRouter.post('/updateProfile', authMiddleWare, async (req, res) => {
   try {
     const userId = req.user._id;
