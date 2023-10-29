@@ -131,28 +131,38 @@ UserRouter.get('/me', authMiddleWare, async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 });
-UserRouter.get('/users/:role?/:inGameRole?', async (req, res) => {
+UserRouter.get('/users', async (req, res) => {
   try {
-    const { name, ffName } = req.query;
-    const { role, inGameRole } = req.params;
+    const { name, ffName, role,inGameRole,limit = 10, skip = 0 } = req.query;
     let query = {};
-    if (name) query.name = new RegExp(name, 'i'); // case-insensitive search for name
-    if (ffName) query.ffName = new RegExp(ffName, 'i'); // case-insensitive search for inGame name
+
+    if (name) query.name = new RegExp(name, 'i'); 
+    if (ffName) query.ffName = new RegExp(ffName, 'i'); 
     if (role) query.role = role;
-    if (inGameRole) query.inGameRole = inGameRole;
-    const users = await UserModel.find(query);
-    res.status(200).json(users);
+    if (inGameRole) query.inGameRole = inGameRole
+
+    const users = await UserModel.find(query)
+      .limit(parseInt(limit))
+      .skip(parseInt(skip));
+    
+    const totalCount = await UserModel.countDocuments(query);
+
+    res.status(200).json({
+      total: totalCount,
+      limit: parseInt(limit),
+      skip: parseInt(skip),
+      data: users
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: error.message });
   }
 });
 
-
 UserRouter.post('/updateProfile', authMiddleWare, async (req, res) => {
   try {
     const userId = req.user._id;
-    const { ffName, bio, inGameRole, otherGames, favGuns, instagramURL, discordTag } = req.body;
+    const { ffName, bio, inGameRole, otherGames, favGuns, instagramURL, discordTag,profilePicURL } = req.body;
     const user = await UserModel.findById(userId);
     if (!user) {
       return res.status(404).json({ mssg: 'User not Found' });
@@ -163,36 +173,30 @@ UserRouter.post('/updateProfile', authMiddleWare, async (req, res) => {
     user.ffName = ffName || user.ffName;
     user.bio = bio || user.bio;
     user.inGameRole = inGameRole || user.inGameRole;
-    const processedOtherGames = typeof otherGames === "string" ? otherGames.split(',') : otherGames;
-    const processedFavGuns = typeof favGuns === "string" ? favGuns.split(',') : favGuns;
-    user.otherGames = [...new Set([...user.otherGames, ...processedOtherGames])];
-    user.favGuns = [...new Set([...user.favGuns, ...processedFavGuns])];
+    if (otherGames) {
+      const processedOtherGames = typeof otherGames === "string" ? otherGames.split(',') : otherGames;
+      if (!Array.isArray(processedOtherGames)) {
+          return res.status(400).json({ mssg: 'Invalid format for otherGames' });
+      }
+      user.otherGames = [...new Set([...user.otherGames, ...processedOtherGames])];
+  }
+    if (favGuns) {
+      const processedOtherGuns = typeof favGuns === "string" ? favGuns.split(',') : favGuns;
+      if (!Array.isArray(processedOtherGuns)) {
+          return res.status(400).json({ mssg: 'Invalid format for Guns' });
+      }
+      user.favGuns = [...new Set([...user.favGuns, ...processedOtherGuns])];
+  }
     user.instagramURL = instagramURL || user.instagramURL;
     user.discordTag = discordTag || user.discordTag;
 
-    // Handle profile picture upload and update
-    if (req.files && req.files.avatar) {
-      try {
-        const imageBuffer = req.files.avatar.data; 
-        const result = await new Promise((resolve, reject) => {
-          const uploadStream = cloudinary.uploader.upload_stream({ resource_type: 'auto' }, (err, result) => {
-            if (err) {
-              reject(err);
-            }
-            else {
-              resolve(result);
-              console.log(result)
-            }    
-          });
-          uploadStream.end(imageBuffer);
-        });
-        user.profilePicURL = result.secure_url;
-      } catch (uploadError) {
-        return res.status(500).json({ Uploading_Error_Message: uploadError.message });
-      }
-    }
-    await user.save();
-    return res.status(200).json({ mssg: 'Profile Updated Successfully' });
+    if (profilePicURL) {
+      user.profilePicURL = profilePicURL;
+  }
+
+  await user.save();  // Save the user updates to the database
+
+  res.status(200).json({ mssg: 'Profile updated successfully!' });
   } catch (error) {
     return res.status(500).json({ mssg: error.message });
   }
