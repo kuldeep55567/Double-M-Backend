@@ -179,7 +179,7 @@ UserRouter.get('/users', async (req, res) => {
 });
 UserRouter.get('/admin/users', async (req, res) => {
   try {
-    const { searchTerm, role, inGameRole, limit = 10, skip = 0 } = req.query;
+    const { searchTerm, role, inGameRole, limit = 10, skip = 0 ,isVerified} = req.query;
     let query = {};
 
     if (searchTerm) {
@@ -190,7 +190,9 @@ UserRouter.get('/admin/users', async (req, res) => {
     }
     if (role) query.role = role;
     if (inGameRole) query.inGameRole = inGameRole
-
+    if (isVerified !== undefined) {
+      query.isVerified = isVerified === 'true';  // Convert string to boolean
+    }
     const users = await UserModel.find(query)
       .limit(parseInt(limit))
       .skip(parseInt(skip));
