@@ -2,7 +2,7 @@ const express = require('express');
 const { UserModel } = require('../Model/UserModel')
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
-const {checkAdminRole} = require("../Middleware/Role")
+const { checkAdminRole } = require("../Middleware/Role")
 const { authMiddleWare } = require("../Middleware/Authenticate")
 const cloudinary = require('cloudinary').v2;
 cloudinary.config({
@@ -135,11 +135,11 @@ UserRouter.delete('/users/:id', authMiddleWare, checkAdminRole, async (req, res)
   try {
     const userIdToDelete = req.params.id;
     const deletedUser = await UserModel.findByIdAndDelete(userIdToDelete);
-    
+
     if (!deletedUser) {
       return res.status(404).json({ message: 'User not found' });
     }
-    
+
     res.status(200).json({ message: 'User deleted successfully' });
   } catch (error) {
     console.log(error);
@@ -148,8 +148,8 @@ UserRouter.delete('/users/:id', authMiddleWare, checkAdminRole, async (req, res)
 });
 UserRouter.get('/users', async (req, res) => {
   try {
-    const { searchTerm, role,inGameRole,limit = 10, skip = 0 } = req.query;
-    let query = {isVerified:true};
+    const { searchTerm, role, inGameRole, limit = 10, skip = 0 } = req.query;
+    let query = { isVerified: true };
 
     if (searchTerm) {
       query.$or = [
@@ -163,7 +163,7 @@ UserRouter.get('/users', async (req, res) => {
     const users = await UserModel.find(query)
       .limit(parseInt(limit))
       .skip(parseInt(skip));
-    
+
     const totalCount = await UserModel.countDocuments(query);
 
     res.status(200).json({
@@ -179,7 +179,7 @@ UserRouter.get('/users', async (req, res) => {
 });
 UserRouter.get('/admin/users', async (req, res) => {
   try {
-    const { searchTerm, role,inGameRole,limit = 10, skip = 0 } = req.query;
+    const { searchTerm, role, inGameRole, limit = 10, skip = 0 } = req.query;
     let query = {};
 
     if (searchTerm) {
@@ -194,7 +194,7 @@ UserRouter.get('/admin/users', async (req, res) => {
     const users = await UserModel.find(query)
       .limit(parseInt(limit))
       .skip(parseInt(skip));
-    
+
     const totalCount = await UserModel.countDocuments(query);
 
     res.status(200).json({
@@ -211,7 +211,7 @@ UserRouter.get('/admin/users', async (req, res) => {
 UserRouter.post('/updateProfile', authMiddleWare, async (req, res) => {
   try {
     const userId = req.user._id;
-    const { ffName, bio, inGameRole, otherGames, favGuns, instagramURL, discordTag,profilePicURL } = req.body;
+    const { ffName, bio, inGameRole, otherGames, favGuns, instagramURL, discordTag, profilePicURL } = req.body;
     const user = await UserModel.findById(userId);
     if (!user) {
       return res.status(404).json({ mssg: 'User not Found' });
@@ -225,36 +225,36 @@ UserRouter.post('/updateProfile', authMiddleWare, async (req, res) => {
     if (otherGames) {
       const processedOtherGames = typeof otherGames === "string" ? otherGames.split(',') : otherGames;
       if (!Array.isArray(processedOtherGames)) {
-          return res.status(400).json({ mssg: 'Invalid format for otherGames' });
+        return res.status(400).json({ mssg: 'Invalid format for otherGames' });
       }
       user.otherGames = [...new Set([...user.otherGames, ...processedOtherGames])];
-  }
+    }
     if (favGuns) {
       const processedOtherGuns = typeof favGuns === "string" ? favGuns.split(',') : favGuns;
       if (!Array.isArray(processedOtherGuns)) {
-          return res.status(400).json({ mssg: 'Invalid format for Guns' });
+        return res.status(400).json({ mssg: 'Invalid format for Guns' });
       }
       user.favGuns = [...new Set([...user.favGuns, ...processedOtherGuns])];
-  }
+    }
     user.instagramURL = instagramURL || user.instagramURL;
     user.discordTag = discordTag || user.discordTag;
 
     if (profilePicURL) {
       user.profilePicURL = profilePicURL;
-  }
+    }
 
-  await user.save();  // Save the user updates to the database
+    await user.save();  // Save the user updates to the database
 
-  res.status(200).json({ mssg: 'Profile updated successfully!' });
+    res.status(200).json({ mssg: 'Profile updated successfully!' });
   } catch (error) {
     return res.status(500).json({ mssg: error.message });
   }
 });
-UserRouter.post('/admin/updateProfile/:userId', authMiddleWare,checkAdminRole, async (req, res) => {
+UserRouter.post('/admin/updateProfile/:userId', authMiddleWare, checkAdminRole, async (req, res) => {
   try {
     const userIdToUpdate = req.params.userId;
-    const { ffName, bio, inGameRole, otherGames, favGuns, instagramURL, discordTag, profilePicURL } = req.body;
-    const user = await UserModel.findByIdAndUpdate(userIdToUpdate, { $set: req.body }, { new: true }); 
+    const { ffName, bio, inGameRole,position,isVerified,teamName,tournamentsPlayed } = req.body;
+    const user = await UserModel.findByIdAndUpdate(userIdToUpdate, { $set: req.body }, { new: true });
     if (!user) {
       return res.status(404).json({ mssg: 'User not Found' });
     }
@@ -263,35 +263,16 @@ UserRouter.post('/admin/updateProfile/:userId', authMiddleWare,checkAdminRole, a
     user.ffName = ffName || user.ffName;
     user.bio = bio || user.bio;
     user.inGameRole = inGameRole || user.inGameRole;
-
-    if (otherGames) {
-      const processedOtherGames = typeof otherGames === "string" ? otherGames.split(',') : otherGames;
-      if (!Array.isArray(processedOtherGames)) {
-          return res.status(400).json({ mssg: 'Invalid format for otherGames' });
-      }
-      user.otherGames = [...new Set([...user.otherGames, ...processedOtherGames])];
-    }
-
-    if (favGuns) {
-      const processedOtherGuns = typeof favGuns === "string" ? favGuns.split(',') : favGuns;
-      if (!Array.isArray(processedOtherGuns)) {
-          return res.status(400).json({ mssg: 'Invalid format for Guns' });
-      }
-      user.favGuns = [...new Set([...user.favGuns, ...processedOtherGuns])];
-    }
-
-    user.instagramURL = instagramURL || user.instagramURL;
-    user.discordTag = discordTag || user.discordTag;
-
-    if (profilePicURL) {
-      user.profilePicURL = profilePicURL;
-    }
+    user.position = position || user.position
+    user.isVerified = isVerified || user.isVerified
+    user.teamName = teamName || user.teamName
+    user.tournamentsPlayed = tournamentsPlayed || user.tournamentsPlayed
     try {
       await user.save();
-  } catch (saveError) {
+    } catch (saveError) {
       console.error("Error saving the user:", saveError);
       return res.status(500).json({ mssg: "Error saving the user." });
-  }  
+    }
     res.status(200).json({ mssg: 'Profile updated successfully!' });
   } catch (error) {
     return res.status(500).json({ mssg: error.message });
