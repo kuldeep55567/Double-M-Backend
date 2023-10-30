@@ -18,7 +18,7 @@ const UserSchema = new mongoose.Schema({
     discordTag: { type: String, default: null },
     teamName: { type: String, default: null },
     tournamentsPlayed: { type: Number, default: 0 },
-    profilePicURL: { type: String, default: null }
+    profilePicURL: { type: String, default: null,immutable:true }
 }, {
     timestamps:true,
     versionKey: false
