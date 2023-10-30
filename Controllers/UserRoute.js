@@ -255,7 +255,7 @@ UserRouter.post('/updateProfile', authMiddleWare, async (req, res) => {
 UserRouter.post('/admin/updateProfile/:userId', authMiddleWare, checkAdminRole, async (req, res) => {
   try {
     const userIdToUpdate = req.params.userId;
-    const { ffName, bio, inGameRole,position,isVerified,teamName,tournamentsPlayed } = req.body;
+    const { ffName, bio, inGameRole,role,isVerified,teamName,tournamentsPlayed } = req.body;
     const user = await UserModel.findByIdAndUpdate(userIdToUpdate, { $set: req.body }, { new: true });
     if (!user) {
       return res.status(404).json({ mssg: 'User not Found' });
@@ -265,7 +265,7 @@ UserRouter.post('/admin/updateProfile/:userId', authMiddleWare, checkAdminRole, 
     user.ffName = ffName || user.ffName;
     user.bio = bio || user.bio;
     user.inGameRole = inGameRole || user.inGameRole;
-    user.position = position || user.position
+    user.role = role || user.role
     user.isVerified = isVerified || user.isVerified
     user.teamName = teamName || user.teamName
     user.tournamentsPlayed = tournamentsPlayed || user.tournamentsPlayed
