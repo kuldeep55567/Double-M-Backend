@@ -177,6 +177,37 @@ UserRouter.get('/users', async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 });
+UserRouter.get('/admin/users', async (req, res) => {
+  try {
+    const { searchTerm, role,inGameRole,limit = 10, skip = 0 } = req.query;
+    let query = {};
+
+    if (searchTerm) {
+      query.$or = [
+        { name: new RegExp(searchTerm, 'i') },
+        { ffName: new RegExp(searchTerm, 'i') }
+      ];
+    }
+    if (role) query.role = role;
+    if (inGameRole) query.inGameRole = inGameRole
+
+    const users = await UserModel.find(query)
+      .limit(parseInt(limit))
+      .skip(parseInt(skip));
+    
+    const totalCount = await UserModel.countDocuments(query);
+
+    res.status(200).json({
+      total: totalCount,
+      limit: parseInt(limit),
+      skip: parseInt(skip),
+      data: users
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: error.message });
+  }
+});
 UserRouter.post('/updateProfile', authMiddleWare, async (req, res) => {
   try {
     const userId = req.user._id;
