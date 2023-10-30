@@ -96,7 +96,8 @@ UserRouter.post('/login', async (req, res) => {
       token: ftoken,
       id: user._id,
       mssg: 'Login Successfull',
-      name: user.name
+      name: user.name,
+      role:user.role
     };
     res.status(200).json(response);
   } catch (error) {
