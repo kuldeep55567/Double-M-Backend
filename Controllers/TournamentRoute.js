@@ -183,7 +183,7 @@ TournamentRouter.get('/join-requests', authMiddleWare, async (req, res) => {
     }
 });
 // Add this route to your existing routes
-TournamentRouter.get('/teams/:id?', authMiddleWare, async (req, res) => {
+TournamentRouter.get('/teams/:id?', async (req, res) => {
     try {
         const { id } = req.params;
 
